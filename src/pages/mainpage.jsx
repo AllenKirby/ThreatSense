@@ -5,7 +5,7 @@ import RootLayout from '../layout/RootLayout'
 
 //components
 import Home from '../components/home'
-import Test from '../components/test-network'
+import CheckFile from '../components/checkfile'
 
 import supabase from '../config/supabaseClient'
 
@@ -13,7 +13,7 @@ const router = createBrowserRouter(
   createRoutesFromElements(
     <Route element={<RootLayout />}>
       <Route index element={<Home />} />
-      <Route path="/testnetwork" element={<Test />}/>
+      <Route path="/checkfile" element={<CheckFile />}/>
     </Route>
   )
 )

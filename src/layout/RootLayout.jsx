@@ -5,16 +5,14 @@ const RootLayout = () => {
     <>
       <header className='w-full h-auto py-5 px-32 flex items-center justify-between'>
         <div>
-          <p className='text-2xl font-permanentMarker'>THREAT<span className='text-blue-800'>SENSE</span></p>
+          <p className='text-4xl font-permanentMarker'>THREAT<span className='text-blue-800'>SENSE</span></p>
         </div>
         <nav className='text-xl font-medium'>
           <NavLink className='mr-7 hover:text-blue-800 transition-all duration-100' to="/">Home</NavLink>
-          <NavLink className='ml-7 hover:text-blue-800 transition-all duration-100' to="/testnetwork">Test Network</NavLink>
+          <NavLink className='ml-7 hover:text-blue-800 transition-all duration-100' to="/checkfile">Check File</NavLink>
         </nav>
       </header>
-      <section className='w-full'>
         <Outlet/>
-      </section>
     </>
   )
 }
