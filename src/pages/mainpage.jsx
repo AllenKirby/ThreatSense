@@ -7,7 +7,6 @@ import RootLayout from '../layout/RootLayout'
 import Home from '../components/home'
 import CheckFile from '../components/checkfile'
 import NotFoundPage from "../components/404page"
-import Output from "../components/output"
 
 import supabase from '../config/supabaseClient'
 
@@ -15,9 +14,7 @@ const router = createBrowserRouter(
   createRoutesFromElements(
     <Route element={<RootLayout />}>
       <Route index element={<Home />} />
-      <Route path="/checkfile" element={<CheckFile />}/>
-      <Route path="/:prediction" element={<Output/>} />
-
+      <Route path="checkfile" element={<CheckFile />}/>
 
       <Route path="*" element={<NotFoundPage/>} />
     </Route>
