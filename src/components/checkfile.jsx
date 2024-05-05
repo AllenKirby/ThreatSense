@@ -3,6 +3,8 @@ import {useEffect, useState} from 'react'
 import axios from 'axios';
 import {ThreeCircles} from 'react-loader-spinner'
 import { Link } from 'react-router-dom';
+import Upload from '../components/assets/upload.json'
+import Lottie from 'react-lottie'
 
 const Testnetwork = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -12,6 +14,15 @@ const Testnetwork = () => {
   const [colorFlag, setColorFlag] = useState(false)
   const [output, setOutput] = useState(false)
   const [uploadFlag, setUploadFlag] = useState(true)
+
+  const options = {
+    loop: true,
+    autoplay: true,
+    animationData: Upload,
+    rendererSettings: {
+        preserveAspectRatio: 'xMidYMid slice',
+      },
+  }; 
 
   useEffect(()=>{
       if(prediction === 1){
@@ -55,6 +66,7 @@ const Testnetwork = () => {
                   'Content-Type': 'multipart/form-data'
               }
           });
+
           if(response){
             const prediction = response.data.prediction
             setLoaderFlag(false)
@@ -74,7 +86,8 @@ const Testnetwork = () => {
 
   return (
     <section className="w-full h-4/5 flex items-center justify-center">
-      {uploadFlag && <div className="w-auto h-auto text-center p-7">
+      {uploadFlag && <div data-aos="zoom-in" className="w-auto h-auto text-center p-24 rounded-lg">
+        <Lottie options={options} height={300} width={300}/>
         <p className="md:text-4xl text-xl font-semibold">Upload an .exe or . dll file to <br /> check for potential malware</p>
         <div className='w-full flex items-center justify-center'>
           <button onClick={uploadFile} className="md:text-2xl text-lg px-7 py-2 rounded-2xl bg-cyan-950 mt-4 hover:bg-white hover:text-slate-900 hover:scale-125 transition-all duration-150 flex"><FiUpload color='white' className='mr-4'/> Upload File</button>

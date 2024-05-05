@@ -1,10 +1,19 @@
 import { Link } from "react-router-dom"
+import AOS from 'aos';
+import 'aos/dist/aos.css';
+import { useEffect } from 'react';
 
-const home = () => {
+const Home = () => {
+
+  useEffect(() => {
+
+    AOS.init();
+
+  }, [])
 
   return (
     <section className="w-full h-4/5 flex items-center justify-center">
-        <article className="p-7 text-center">
+        <article data-aos="zoom-in" className="p-7 text-center">
           <p className="md:text-5xl text-3xl mb-4">Welcome to <span className=" font-permanentMarker">THREAT<span className='text-blue-800'>SENSE</span></span></p>
           <p className="md:text-3xl text-xl font-light">Securing the Digital World: One Scan at a Time</p>
           <div className="w-full flex items-center justify-center">
@@ -17,4 +26,4 @@ const home = () => {
   )
 }
 
-export default home
+export default Home
