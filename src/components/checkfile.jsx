@@ -59,22 +59,18 @@ const Testnetwork = () => {
         setUploadFlag(false)
         const formData = new FormData();
         formData.append('file', selectedFile);
-  
+        console.log("start");
         try {
-          const response = await axios.post('https://maldetectionml01.pythonanywhere.com/extract', formData, {
+          await axios.post('https://maldetectionml01.pythonanywhere.com/extract_data', formData, {
               headers: {
                   'Content-Type': 'multipart/form-data'
               }
+          }).then(response => {
+            console.log('Response data:', response.data);
+          }).catch(error =>{
+            console.error('Error:', error);
           });
-
-          if(response){
-            const prediction = response.data.prediction
-            setLoaderFlag(false)
-            console.log(response.data);
-            setPrediction(prediction)
-            console.log(prediction)
-            setOutputFlag(true)
-          }
+          console.log("end");
         } catch (error) {
           console.error(error);
         }
