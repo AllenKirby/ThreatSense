@@ -11,7 +11,7 @@ const Testnetwork = () => {
   const [loaderFlag, setLoaderFlag] = useState(false);
   const [outputFlag, setOutputFlag] = useState(false)
   const [prediction, setPrediction] = useState(null)
-  const [colorFlag, setColorFlag] = useState(false)
+  const [color, setColor] = useState('')
   const [output, setOutput] = useState(false)
   const [uploadFlag, setUploadFlag] = useState(true)
 
@@ -25,13 +25,13 @@ const Testnetwork = () => {
   }; 
 
   useEffect(()=>{
-      if(prediction === 1){
-          setOutput("No Malware Found on the File")
-          setColorFlag(true)
+      if(prediction > 0){
+        setOutput("Warning! Malware Found on the File")
+        setColor('text-red-800')
       }
       else{
-          setOutput("Warning! Malware Found on the File")
-          setColorFlag(false)
+        setOutput("No Malware Found on the File")
+        setColor('text-green-800')
       }
   }, [prediction])
 
@@ -66,7 +66,14 @@ const Testnetwork = () => {
                   'Content-Type': 'multipart/form-data'
               }
           }).then(response => {
-            console.log('Response data:', response.data);
+            if (response){
+              setLoaderFlag(false)
+              console.log('Response data:', response.data);
+              console.log(response.data.extracted_values.data.attributes.stats.malicious)
+              
+              setPrediction(response.data.extracted_values.data.attributes.stats.malicious)
+              setOutputFlag(true)
+            }
           }).catch(error =>{
             console.error('Error:', error);
           });
@@ -114,7 +121,7 @@ const Testnetwork = () => {
       {outputFlag && 
         <section className="w-full h-auto flex items-center justify-center">
           <div className="w-auto h-auto p-7">
-              <p className={`text-center md:text-2xl text-lg font-semibold  ${colorFlag ? 'text-green-800' : 'text-red-800'}`}>{output}</p>
+              <p className={`text-center md:text-2xl text-lg font-semibold  ${color}`}>{output}</p>
               <div className="w-full flex items-center justify-center my-5">
                 <button onClick={() => {setOutputFlag(false); setUploadFlag(true);} } className="md:text-2xl text-lg px-7 py-2 rounded-2xl bg-cyan-950 mt-4 hover:bg-white hover:text-slate-900 hover:scale-125 transition-all duration-150 flex"><FiUpload color='white' className='mr-4'/>Upload Another File</button>
               </div>
