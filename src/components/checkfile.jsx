@@ -1,31 +1,34 @@
-import { FiUpload } from 'react-icons/fi'
 import {useEffect, useState} from 'react'
 import axios from 'axios';
-import {ThreeCircles} from 'react-loader-spinner'
+import { FiUpload } from 'react-icons/fi'
 import { Link } from 'react-router-dom';
-import Upload from '../components/assets/upload.json'
-import Lottie from 'react-lottie'
 
-const Testnetwork = () => {
+
+//sub-components
+import Loaders from './SubComponents/loaders';
+import UploadFile from './SubComponents/upload';
+
+const Testnetwork = () => {       
   const [selectedFile, setSelectedFile] = useState(null);
   const [loaderFlag, setLoaderFlag] = useState(false);
   const [outputFlag, setOutputFlag] = useState(false)
-  const [prediction, setPrediction] = useState(null)
   const [color, setColor] = useState('')
   const [output, setOutput] = useState(false)
   const [uploadFlag, setUploadFlag] = useState(true)
-
-  const options = {
-    loop: true,
-    autoplay: true,
-    animationData: Upload,
-    rendererSettings: {
-        preserveAspectRatio: 'xMidYMid slice',
-      },
-  }; 
+  const [predictionData , setPredictionData] = useState({
+    malicious: null, 
+    confirmed_timeout: null, 
+    failure: null, 
+    harmless: null, 
+    suspicious: null, 
+    timeout: null, 
+    type_unsupported: null, 
+    undetected: null
+  })
+ 
 
   useEffect(()=>{
-      if(prediction > 0){
+      if(predictionData.malicious > 0){
         setOutput("Warning! Malware Found on the File")
         setColor('text-red-800')
       }
@@ -33,7 +36,7 @@ const Testnetwork = () => {
         setOutput("No Malware Found on the File")
         setColor('text-green-800')
       }
-  }, [prediction])
+  }, [predictionData.malicious])
 
   const handleFileChange = (event) => {
     setSelectedFile(event.target.files[0]);
@@ -70,8 +73,9 @@ const Testnetwork = () => {
               setLoaderFlag(false)
               console.log('Response data:', response.data);
               console.log(response.data.extracted_values.data.attributes.stats.malicious)
+              const res = response.data.extracted_values.data.attributes.stats;
               
-              setPrediction(response.data.extracted_values.data.attributes.stats.malicious)
+              setPredictionData({malicious: res.malicious, confirmed_timeout: res.confirmed_timeout, failure: res.failure, harmless: res.harmless, suspicious: res.suspicious, timeout: res.timeout, type_unsupported: res.type_unsupported, undetected: res.undetected})
               setOutputFlag(true)
             }
           }).catch(error =>{
@@ -89,35 +93,8 @@ const Testnetwork = () => {
 
   return (
     <section className="w-full h-4/5 flex items-center justify-center">
-      {uploadFlag && <div data-aos="zoom-in" className="w-auto h-auto text-center p-24 rounded-lg">
-        <Lottie options={options} height={300} width={300}/>
-        <p className="md:text-4xl text-xl font-semibold">Upload an .exe or . dll file to <br /> check for potential malware</p>
-        <div className='w-full flex items-center justify-center'>
-          <button onClick={uploadFile} className="md:text-2xl text-lg px-7 py-2 rounded-2xl bg-cyan-950 mt-4 hover:bg-white hover:text-slate-900 hover:scale-125 transition-all duration-150 flex"><FiUpload color='white' className='mr-4'/> Upload File</button>
-        </div>
-      </div>
-      }
-      {loaderFlag && 
-        <div className="w-auto h-auto text-center p-7">
-          <div className='p-5 flex items-center justify-center'>
-            <ThreeCircles
-              visible={true}
-              height="100"
-              width="100"
-              innerCircleColor="#ffffff"
-              middleCircleColor="#152238"
-              outerCircleColor="#0000FF"
-              ariaLabel="three-circles-loading"
-              wrapperStyle={{}}
-              wrapperClass=""
-            />
-          </div>
-          <p className='md:text-2xl text-xl font-semibold'>Checking the File</p>
-          <div className='flex items-center justify-center py-5'>
-            <button onClick={() => setLoaderFlag(false)} className='md:text-2xl text-lg px-7 py-2 font-semibold rounded-xl bg-cyan-950 mt-4 hover:bg-white hover:text-slate-900 hover:scale-125 transition-all duration-150'>Go Back</button>
-          </div>
-        </div>
-      }
+      {uploadFlag && <UploadFile upload={uploadFile} />}
+      {loaderFlag && <Loaders />}
       {outputFlag && 
         <section className="w-full h-auto flex items-center justify-center">
           <div className="w-auto h-auto p-7">
