@@ -8,6 +8,13 @@ import { Link } from 'react-router-dom';
 import Loaders from './SubComponents/loaders';
 import UploadFile from './SubComponents/upload';
 
+
+import { GoogleGenerativeAI } from '@google/generative-ai';
+const API_KEY_GEMINI = 'AIzaSyCE9JE3wzlsy5XcOVatjltLPSESgfwAjW0';
+
+const genAI = new GoogleGenerativeAI(API_KEY_GEMINI);
+
+
 const Testnetwork = () => {       
   const [selectedFile, setSelectedFile] = useState(null);
   const [loaderFlag, setLoaderFlag] = useState(false);
@@ -45,7 +52,7 @@ const Testnetwork = () => {
   const uploadFile = () =>{
     let input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.exe, .dll';
+    input.accept = '.exe, .dll, .pdf';
     input.addEventListener('change', handleFileChange)
     input.click();
   }
@@ -54,42 +61,55 @@ const Testnetwork = () => {
     setLoaderFlag(false)
   }, [])
 
+
   useEffect(()=>{
     const handleSubmit = async () => {
-
       if(selectedFile){
         setLoaderFlag(true)
         setUploadFlag(false)
         const formData = new FormData();
-        formData.append('file', selectedFile);
+        formData.append('inputFile', selectedFile, "file");
+        
         console.log("start");
         try {
-          await axios.post('https://maldetectionml01.pythonanywhere.com/extract_data', formData, {
-              headers: {
-                  'Content-Type': 'multipart/form-data'
-              }
-          }).then(response => {
-            if (response){
-              setLoaderFlag(false)
-              console.log('Response data:', response.data);
-              console.log(response.data.extracted_values.data.attributes.stats.malicious)
-              const res = response.data.extracted_values.data.attributes.stats;
-              
-              setPredictionData({malicious: res.malicious, confirmed_timeout: res.confirmed_timeout, failure: res.failure, harmless: res.harmless, suspicious: res.suspicious, timeout: res.timeout, type_unsupported: res.type_unsupported, undetected: res.undetected})
-              setOutputFlag(true)
-            }
-          }).catch(error =>{
-            console.error('Error:', error);
+          axios.post('https://api.cloudmersive.com/virus/scan/file/advanced', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'Apikey': '874630e7-9a60-457c-a096-c79f2274c161',
+                // Add other headers as needed
+            },
+            timeout: 0, // Adjust timeout as needed
+            // You may add other options like responseType, onUploadProgress, etc.
+          })
+          .then(response => {
+            console.log(response.data); // Handle the response as needed
+          })
+          .catch(error => {
+              console.error('Error uploading file:', error);
           });
-          console.log("end");
         } catch (error) {
           console.error(error);
         }
+        console.log("end");
+        runGenerativeAI();
       }
     };
     handleSubmit();
   }, [selectedFile])
 
+  const runGenerativeAI = async () => {
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const prompt = 'Write a short phrase about awareness in downloading and executing a suspicious pdf file';
+    
+    try {
+        const result = await model.generateContent(prompt);
+        const response = result.response;
+        const text = response.text();
+        console.log(text);
+    } catch (error) {
+        console.error('Error generating content:', error);
+    }
+};
 
   return (
     <section className="w-full h-4/5 flex items-center justify-center">
