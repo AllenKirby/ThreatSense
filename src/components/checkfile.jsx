@@ -1,12 +1,11 @@
 import {useEffect, useState} from 'react'
 import axios from 'axios';
-import { FiUpload } from 'react-icons/fi'
-import { Link } from 'react-router-dom';
 
 
 //sub-components
 import Loaders from './SubComponents/loaders';
 import UploadFile from './SubComponents/upload';
+import Output from './SubComponents/output';
 
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -16,45 +15,32 @@ const genAI = new GoogleGenerativeAI(API_KEY_GEMINI);
 
 
 const Testnetwork = () => {       
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFile, setSelectedFile] = useState({cloudmersive: null, virustotal: null, threatsense: null});
   const [loaderFlag, setLoaderFlag] = useState(false);
   const [outputFlag, setOutputFlag] = useState(false)
-  const [color, setColor] = useState('')
-  const [output, setOutput] = useState(false)
   const [uploadFlag, setUploadFlag] = useState(true)
-  const [predictionData , setPredictionData] = useState({
-    malicious: null, 
-    confirmed_timeout: null, 
-    failure: null, 
-    harmless: null, 
-    suspicious: null, 
-    timeout: null, 
-    type_unsupported: null, 
-    undetected: null
-  })
- 
+  const [output, setOutput] = useState('')
+  const [promptOutput, setPromptOutput] = useState('')
+  const [generatedOutput, setGeneratedOutput] = useState('')
 
-  useEffect(()=>{
-      if(predictionData.malicious > 0){
-        setOutput("Warning! Malware Found on the File")
-        setColor('text-red-800')
-      }
-      else{
-        setOutput("No Malware Found on the File")
-        setColor('text-green-800')
-      }
-  }, [predictionData.malicious])
 
-  const handleFileChange = (event) => {
-    setSelectedFile(event.target.files[0]);
+  const handleFIleChange= (service, event) => {
+    setSelectedFile((prevFiles) => ({
+      ...prevFiles,
+      [service]: event.target.files[0]
+    }));
   };
 
-  const uploadFile = () =>{
+  const uploadFile = (service) =>{
     let input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.exe, .dll, .pdf';
-    input.addEventListener('change', handleFileChange)
+    input.accept = '.pdf, .docx, .xlsx, .pptx, .html, .swf, .zip, .rar, .dmg, .tar, .exe, .dll';
+    input.addEventListener('change', (event) => handleFIleChange(service, event))
     input.click();
+  }
+  const uploadAgain = () => {
+    setOutputFlag(false); 
+    setUploadFlag(true);
   }
 
   useEffect(()=>{
@@ -64,11 +50,11 @@ const Testnetwork = () => {
 
   useEffect(()=>{
     const handleSubmit = async () => {
-      if(selectedFile){
+      if(selectedFile.cloudmersive){
         setLoaderFlag(true)
         setUploadFlag(false)
         const formData = new FormData();
-        formData.append('inputFile', selectedFile, "file");
+        formData.append('inputFile', selectedFile.cloudmersive, "file");
         
         console.log("start");
         try {
@@ -82,7 +68,16 @@ const Testnetwork = () => {
             // You may add other options like responseType, onUploadProgress, etc.
           })
           .then(response => {
-            console.log(response.data); // Handle the response as needed
+            if(response){
+              setLoaderFlag(false)
+              setOutputFlag(true)
+              const data = response.data;
+              console.log(data)
+              console.log(data.CleanResult); 
+              console.log(data.FoundViruses); 
+              setOutput(data.CleanResult)
+              generateQuestions();
+            }
           })
           .catch(error => {
               console.error('Error uploading file:', error);
@@ -91,43 +86,44 @@ const Testnetwork = () => {
           console.error(error);
         }
         console.log("end");
-        runGenerativeAI();
       }
     };
     handleSubmit();
-  }, [selectedFile])
+  }, [selectedFile.cloudmersive])
 
-  const runGenerativeAI = async () => {
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
-    const prompt = 'Write a short phrase about awareness in downloading and executing a suspicious pdf file';
-    
-    try {
-        const result = await model.generateContent(prompt);
-        const response = result.response;
-        const text = response.text();
-        console.log(text);
-    } catch (error) {
-        console.error('Error generating content:', error);
+  const generateQuestions = async () => {
+    if(output){
+      let Text = await runGenerativeAI("Create 3 questions about virus and malware prevention.");
+      let splitText = Text.split("?");
+      const filteredText = splitText.filter(item => item != '')
+      setPromptOutput(filteredText)
     }
+  }
+
+  const generateOutput = async (prompt) => {
+    const text = await runGenerativeAI(prompt)
+    console.log(text)
+    setGeneratedOutput(text)
+  }
+
+  const runGenerativeAI = async (prompt) => {
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    try {
+      const result = await model.generateContent(prompt);
+      const response = result.response;
+      const text = response.text();
+      return text;
+  } catch (error) {
+      console.error('Error generating content:', error);
+      return error
+  }
 };
 
   return (
     <section className="w-full h-4/5 flex items-center justify-center">
-      {uploadFlag && <UploadFile upload={uploadFile} />}
-      {loaderFlag && <Loaders />}
-      {outputFlag && 
-        <section className="w-full h-auto flex items-center justify-center">
-          <div className="w-auto h-auto p-7">
-              <p className={`text-center md:text-2xl text-lg font-semibold  ${color}`}>{output}</p>
-              <div className="w-full flex items-center justify-center my-5">
-                <button onClick={() => {setOutputFlag(false); setUploadFlag(true);} } className="md:text-2xl text-lg px-7 py-2 rounded-2xl bg-cyan-950 mt-4 hover:bg-white hover:text-slate-900 hover:scale-125 transition-all duration-150 flex"><FiUpload color='white' className='mr-4'/>Upload Another File</button>
-              </div>
-              <div className="w-full flex items-center justify-center my-5">
-                <button className="md:text-2xl text-lg w-auto px-12 py-2 rounded-2xl bg-cyan-950 hover:bg-white hover:text-slate-900 hover:scale-125 transition-all duration-150 flex"><Link to='/'>Return to Home</Link></button>
-              </div>
-          </div>
-        </section>
-      }
+        {uploadFlag && <UploadFile upload={uploadFile} />}
+        {loaderFlag && <Loaders loadertext={"Checking the File"} />}
+        {outputFlag && <Output uploadAgain={uploadAgain} output={output} prompts={promptOutput} generateOutput={generateOutput} generatedOutput={generatedOutput}/>}
     </section>
   )
 }
