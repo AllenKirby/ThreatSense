@@ -9,6 +9,7 @@ import Output from './SubComponents/output';
 
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import Errorpage from './errorpage';
 const API_KEY_GEMINI = 'AIzaSyCE9JE3wzlsy5XcOVatjltLPSESgfwAjW0';
 
 const genAI = new GoogleGenerativeAI(API_KEY_GEMINI);
@@ -23,6 +24,7 @@ const Testnetwork = () => {
   const [promptOutput, setPromptOutput] = useState('')
   const [generatedOutput, setGeneratedOutput] = useState('')
   const [whichService, setService] = useState('')
+  const [errormessage, setErrormessage] = useState('')
 
 
   const handleFIleChange= (service, event) => {
@@ -36,7 +38,9 @@ const Testnetwork = () => {
   const uploadFile = (service) =>{
     let input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.pdf, .docx, .xlsx, .pptx, .html, .swf, .zip, .rar, .dmg, .tar, .exe, .dll';
+    input.accept = service === 'cloudmersive' ?  '.pdf, .docx, .xlsx, .pptx, .html, .swf, .zip, .rar, .dmg, .tar' 
+                : service === 'threatsense' ? '.exe, .dll' 
+                : service === 'virustotal' ? '' : '' ;
     input.addEventListener('change', (event) => handleFIleChange(service, event))
     input.click();
   }
@@ -61,10 +65,28 @@ const Testnetwork = () => {
             'Content-Type': 'multipart/form-data',
           },
       })
-      .then(response => console.log(response.data))
-      .catch(error => console.log("error inside threatsense: ", error))
+      .then(async(response)=> {
+        if(response){
+          setLoaderFlag(false)
+          setOutputFlag(true)
+          console.log(response.data)
+          const prediction = response.data.prediction;
+          console.log(prediction)
+          setOutput('')
+          setOutput(prediction)
+          await generateQuestions();
+          setErrormessage('')
+        }
+      })
+      .catch(error => {
+        console.log("error inside threatsense: ", error)
+        setOutput('')
+        setErrormessage(error)
+      })
     }catch(error){
       console.log("Error occured in TS: ", error);
+      setOutput('')
+      setErrormessage(error)
     }
     console.log("end");
 
@@ -98,25 +120,27 @@ const Testnetwork = () => {
           console.log(data.FoundViruses); 
           setOutput(data.CleanResult)
           await generateQuestions();
+          setErrormessage('')
         }
         
       })
       .catch(error => {
           console.error('Error uploading file:', error);
+          setOutput('')
+          setErrormessage(error)
       });
     } catch (error) {
       console.error(error);
+      setOutput('')
+      setErrormessage(error)
     }
     console.log("end");
   }
 
-  const virustotal_func = () => {
-    setLoaderFlag(true)
-    setUploadFlag(false)
-    api_virustotal_key = '7b5adb68edbcdbc0047ff72271a6b072df6f5f794758fcc8541ba5099a1b5cdc'
-    const formData = new FormData();
-    formData.append('file', selectedFile.virustotal);
-    const options = {
+  const upload_file_vt = () => {
+    const vtformData = new FormData();
+    vtformData.append('file', selectedFile.virustotal);
+    const options1 = {
       method: 'POST',
       headers: {
         accept: 'application/json',
@@ -124,13 +148,49 @@ const Testnetwork = () => {
       }
     };
     
-    options.body = form;
+    options1.body = vtformData;
 
-    fetch('https://www.virustotal.com/api/v3/files', options)
+    fetch('https://www.virustotal.com/api/v3/files', options1)
     .then(response => response.json())
-    .then(response => console.log(response))
-    .catch(err => console.error(err));
-    
+    .then(response => {
+      console.log(response['data']['id'])
+      console.log(response['data'])
+      console.log(response['data']['links']['self'])
+      console.log('before option2')
+      const options2 = {
+        method: 'GET',
+        headers: {
+          accept: 'application/json',
+          'x-apikey': '7b5adb68edbcdbc0047ff72271a6b072df6f5f794758fcc8541ba5099a1b5cdc'
+        }
+      };
+
+      fetch(response['data']['links']['self'], options2)
+      .then(response => response.json())
+      .then(async (response) => {
+        if(response){
+          setLoaderFlag(false)
+          setOutputFlag(true)
+          const res = response.data
+          const prediction = res.attributes.stats.malicious === 0 ? true : false
+          console.log(prediction)
+          setOutput(prediction)
+          await generateQuestions();
+        }
+      })
+      .catch(err => console.error(err));
+
+      })
+    .catch(err => {
+      console.error(err)
+      
+    });
+  }
+
+  const virustotal_func = () => {
+    setLoaderFlag(true)
+    setUploadFlag(false)
+    upload_file_vt();
   }
 
   useEffect(()=>{
@@ -154,7 +214,7 @@ const Testnetwork = () => {
   }, [selectedFile])
 
   const generateQuestions = async () => {
-    let Text = await runGenerativeAI("Create 3 questions about virus and malware prevention.");
+    let Text = await runGenerativeAI("Create 3 questions about prevention of virus and malware that maybe included to your downloaded files from the internet.");
     let splitText = Text.split("?");
     const filteredText = splitText.filter(item => item != '')
     console.log("hit generating questions")
@@ -164,6 +224,13 @@ const Testnetwork = () => {
   const generateOutput = async (prompt) => {
     setGeneratedOutput('')
     const text = await runGenerativeAI(prompt + "Make it a paragraph form")
+    console.log(text)
+    setGeneratedOutput(text)
+  }
+
+  const generateSuggestion = async () => {
+    setGeneratedOutput('')
+    const text = await runGenerativeAI("Create a paragraph about the uploaded file contains a virus or malware and include how to handle or remove the uploaded file")
     console.log(text)
     setGeneratedOutput(text)
   }
@@ -185,7 +252,14 @@ const Testnetwork = () => {
     <section className="w-full h-4/5 flex items-center justify-center">
         {uploadFlag && <UploadFile upload={uploadFile} />}
         {loaderFlag && <Loaders loadertext={"Checking the File"} />}
-        {outputFlag && <Output uploadAgain={uploadAgain} output={output} prompts={promptOutput} generateOutput={generateOutput} generatedOutput={generatedOutput}/>}
+        {outputFlag && <Output 
+        uploadAgain={uploadAgain} 
+        output={output} 
+        prompts={promptOutput} 
+        generateOutput={generateOutput} 
+        generatedOutput={generatedOutput}
+        generateSuggestion={generateSuggestion}/>}
+
     </section>
   )
 }

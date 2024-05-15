@@ -25,12 +25,12 @@ const UploadFile = (props) => {
 
   return (
     <div data-aos="zoom-in" className="w-auto h-auto text-center p-24 rounded-lg">
-      <div className='w-full h-auto relative'>
-        <button onClick={() => setDropDown(!dropdown)} className='float-right w-auto px-7 py-2 rounded-xl text-xl bg-cyan-950 transition-all duration-150 flex'>{dropdownclick}<IoMdArrowDropdown className='my-1 ml-2' color='white'/></button>
-        <div className={`absolute py-2 flex flex-col top-9 right-0 ${dropdown ? 'block' : 'hidden'}`}>
-          <button onClick={() => setDropdownclick('cloudmersive')} className='px-7 py-2 bg-slate-800 hover:bg-white hover:text-slate-900 hover:scale-125 transition-all duration-150'>CloudMersive</button>
-          <button onClick={() => setDropdownclick('virustotal')}className='px-7 py-2 bg-slate-800 hover:bg-white hover:text-slate-900 hover:scale-125 transition-all duration-150'>VirusTotal</button>
-          <button onClick={() => setDropdownclick('threatsense')}className='px-7 py-2 bg-slate-800 hover:bg-white hover:text-slate-900 hover:scale-125 transition-all duration-150'>ThreatSense</button>
+      <div className='w-full h-auto relative z-10'>
+        <button onClick={() => setDropDown(!dropdown)} className='z-10 float-right w-auto px-8 py-2 rounded-xl text-xl bg-cyan-950 transition-all duration-150 flex'>{dropdownclick === 'cloudmersive' ? 'For Files' : dropdownclick === 'virustotal' ? 'General Scan' : dropdownclick === 'threatsense' ? 'For exe & dll' : '' }<IoMdArrowDropdown className='my-1 ml-2' color='white'/></button>
+        <div className={`absolute bg-slate-800 pt-4 flex flex-col -z-10 top-9 right-0 ${dropdown ? 'block' : 'hidden'}`}>
+          <button onClick={() => setDropdownclick('cloudmersive')} className='px-7 py-2 bg-slate-800 hover:rounded-xl hover:bg-white hover:text-slate-900 hover:scale-125 transition-all duration-150'>For Files</button>
+          <button onClick={() => setDropdownclick('virustotal')}className='px-7 py-2 bg-slate-800 hover:rounded-xl hover:bg-white hover:text-slate-900 hover:scale-125 transition-all duration-150'>General Scan</button>
+          <button onClick={() => setDropdownclick('threatsense')}className='px-7 py-2 bg-slate-800 hover:rounded-xl hover:bg-white hover:text-slate-900 hover:scale-125 transition-all duration-150'>For exe & dll </button>
         </div>
       </div>
       
