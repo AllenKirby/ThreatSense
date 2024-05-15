@@ -74,7 +74,7 @@ const Output = (props) => {
             {loaderFlag && <Loaders loadertext={"Generating Output"}/>}
             {generatedOutput && 
                 <div className='w-full h-auto'>
-                    <p>{generatedOutput}</p>
+                    <p className='text-justify'>{generatedOutput}</p>
                 </div>}
         </div>}
     </section>

@@ -101,7 +101,8 @@ const Testnetwork = () => {
   }
 
   const generateOutput = async (prompt) => {
-    const text = await runGenerativeAI(prompt)
+    setGeneratedOutput('')
+    const text = await runGenerativeAI(prompt + "Make it a paragraph form")
     console.log(text)
     setGeneratedOutput(text)
   }
