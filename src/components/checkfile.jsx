@@ -59,6 +59,7 @@ const Testnetwork = () => {
     const formData = new FormData();
     formData.append('file', selectedFile.threatsense);
     console.log("start");
+    console.log(selectedFile.threatsense);
     try{
       axios.post('https://maldetectionml01.pythonanywhere.com/extract',formData, {
         headers: {
@@ -137,60 +138,94 @@ const Testnetwork = () => {
     console.log("end");
   }
 
-  const upload_file_vt = () => {
-    const vtformData = new FormData();
-    vtformData.append('file', selectedFile.virustotal);
-    const options1 = {
-      method: 'POST',
-      headers: {
-        accept: 'application/json',
-        'x-apikey': '7b5adb68edbcdbc0047ff72271a6b072df6f5f794758fcc8541ba5099a1b5cdc'
-      }
-    };
+  // const upload_file_vt = () => {
+  //   const vtformData = new FormData();
+  //   vtformData.append('file', selectedFile.virustotal);
+  //   const options1 = {
+  //     method: 'POST',
+  //     headers: {
+  //       accept: 'application/json',
+  //       'x-apikey': '7b5adb68edbcdbc0047ff72271a6b072df6f5f794758fcc8541ba5099a1b5cdc'
+  //     }
+  //   };
     
-    options1.body = vtformData;
+  //   options1.body = vtformData;
 
-    fetch('https://www.virustotal.com/api/v3/files', options1)
-    .then(response => response.json())
-    .then(response => {
-      console.log(response['data']['id'])
-      console.log(response['data'])
-      console.log(response['data']['links']['self'])
-      console.log('before option2')
-      const options2 = {
-        method: 'GET',
-        headers: {
-          accept: 'application/json',
-          'x-apikey': '7b5adb68edbcdbc0047ff72271a6b072df6f5f794758fcc8541ba5099a1b5cdc'
-        }
-      };
+  //   fetch('https://www.virustotal.com/api/v3/files', options1)
+  //   .then(response => response.json())
+  //   .then(response => {
+  //     console.log(response['data']['id'])
+  //     console.log(response['data'])
+  //     console.log(response['data']['links']['self'])
+  //     console.log('before option2')
+  //     const options2 = {
+  //       method: 'GET',
+  //       headers: {
+  //         accept: 'application/json',
+  //         'x-apikey': '7b5adb68edbcdbc0047ff72271a6b072df6f5f794758fcc8541ba5099a1b5cdc'
+  //       }
+  //     };
 
-      fetch(response['data']['links']['self'], options2)
-      .then(response => response.json())
-      .then(async (response) => {
-        if(response){
-          setLoaderFlag(false)
-          setOutputFlag(true)
-          const res = response.data
-          const prediction = res.attributes.stats.malicious === 0 ? true : false
-          console.log(prediction)
-          setOutput(prediction)
-          await generateQuestions();
-        }
-      })
-      .catch(err => console.error(err));
+  //     fetch(response['data']['links']['self'], options2)
+  //     .then(response => response.json())
+  //     .then(async (response) => {
+  //       if(response){
+  //         setLoaderFlag(false)
+  //         setOutputFlag(true)
+  //         const res = response.data
+  //         const prediction = res.attributes.stats.malicious === 0 ? true : false
+  //         console.log(prediction)
+  //         setOutput(prediction)
+  //         await generateQuestions();
+  //       }
+  //     })
+  //     .catch(err => console.error(err));
 
-      })
-    .catch(err => {
-      console.error(err)
+  //     })
+  //   .catch(err => {
+  //     console.error(err)
       
-    });
-  }
+  //   });
+  // }
 
   const virustotal_func = () => {
     setLoaderFlag(true)
     setUploadFlag(false)
-    upload_file_vt();
+    // upload_file_vt();
+    const formData = new FormData();
+    formData.append('file', selectedFile.virustotal);
+    console.log("start");
+    console.log(selectedFile.virustotal);
+    try{
+      axios.post('https://maldetectionml01.pythonanywhere.com/extract_data',formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+      })
+      .then(async(response)=> {
+        if(response){
+          setLoaderFlag(false)
+          setOutputFlag(true)
+          console.log(response.data)
+          // const prediction = response.data.prediction;
+          // console.log(prediction)
+          setOutput('')
+          setOutput(prediction)
+          await generateQuestions();
+          setErrormessage('')
+        }
+      })
+      .catch(error => {
+        console.log("error inside threatsense: ", error)
+        setOutput('')
+        setErrormessage(error)
+      })
+    }catch(error){
+      console.log("Error occured in TS: ", error);
+      setOutput('')
+      setErrormessage(error)
+    }
+    console.log("end");
   }
 
   useEffect(()=>{
