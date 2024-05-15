@@ -69,7 +69,7 @@ const Output = (props) => {
                 <button className="md:text-xl text-lg w-auto px-12 py-2 rounded-2xl bg-cyan-950 hover:bg-white hover:text-slate-900 hover:scale-125 transition-all duration-150 flex"><Link to='/'>Return to Home</Link></button>
             </div>
         </div>
-        {outputContainer && <div className='w-1/2 h-auto text-center bg-slate-800 rounded-2xl p-5 overflow-auto transition-all duration-300'>
+        {outputContainer && <div className='w-1/2 h-full text-center bg-slate-800 rounded-2xl p-5 overflow-auto transition-all duration-300'>
             <p className='text-2xl font-medium my-3'>Generated Output</p>
             {loaderFlag && <Loaders loadertext={"Generating Output"}/>}
             {generatedOutput && 
