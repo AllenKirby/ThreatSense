@@ -67,6 +67,7 @@ const Testnetwork = () => {
       console.log("Error occured in TS: ", error);
     }
     console.log("end");
+
     // normal = 1
     // malware = 0
   }
@@ -86,8 +87,9 @@ const Testnetwork = () => {
         },
         timeout: 0,
       })
-      .then(response => {
+      .then(async (response) => {
         if(response){
+          
           setLoaderFlag(false)
           setOutputFlag(true)
           const data = response.data;
@@ -95,8 +97,9 @@ const Testnetwork = () => {
           console.log(data.CleanResult); 
           console.log(data.FoundViruses); 
           setOutput(data.CleanResult)
-          generateQuestions();
+          await generateQuestions();
         }
+        
       })
       .catch(error => {
           console.error('Error uploading file:', error);
@@ -127,6 +130,7 @@ const Testnetwork = () => {
     .then(response => response.json())
     .then(response => console.log(response))
     .catch(err => console.error(err));
+    
   }
 
   useEffect(()=>{
@@ -150,12 +154,11 @@ const Testnetwork = () => {
   }, [selectedFile])
 
   const generateQuestions = async () => {
-    if(output){
-      let Text = await runGenerativeAI("Create 3 questions about virus and malware prevention.");
-      let splitText = Text.split("?");
-      const filteredText = splitText.filter(item => item != '')
-      setPromptOutput(filteredText)
-    }
+    let Text = await runGenerativeAI("Create 3 questions about virus and malware prevention.");
+    let splitText = Text.split("?");
+    const filteredText = splitText.filter(item => item != '')
+    console.log("hit generating questions")
+    setPromptOutput(filteredText)
   }
 
   const generateOutput = async (prompt) => {
