@@ -22,6 +22,7 @@ const Testnetwork = () => {
   const [output, setOutput] = useState('')
   const [promptOutput, setPromptOutput] = useState('')
   const [generatedOutput, setGeneratedOutput] = useState('')
+  const [whichService, setService] = useState('')
 
 
   const handleFIleChange= (service, event) => {
@@ -29,6 +30,7 @@ const Testnetwork = () => {
       ...prevFiles,
       [service]: event.target.files[0]
     }));
+    setService(service);
   };
 
   const uploadFile = (service) =>{
@@ -47,57 +49,116 @@ const Testnetwork = () => {
     setLoaderFlag(false)
   }, [])
 
+  const threatSense_func = () => {
+    setLoaderFlag(true)
+    setUploadFlag(false)
+    const formData = new FormData();
+    formData.append('file', selectedFile.threatsense);
+    console.log("start");
+    try{
+      axios.post('https://maldetectionml01.pythonanywhere.com/extract',formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+      })
+      .then(response => console.log(response.data))
+      .catch(error => console.log("error inside threatsense: ", error))
+    }catch(error){
+      console.log("Error occured in TS: ", error);
+    }
+    console.log("end");
+
+    // normal = 1
+    // malware = 0
+  }
+
+  const cloudMersive_func = () =>{
+    setLoaderFlag(true)
+    setUploadFlag(false)
+    const formData = new FormData();
+    formData.append('inputFile', selectedFile.cloudmersive, "file");
+    
+    console.log("start");
+    try {
+      axios.post('https://api.cloudmersive.com/virus/scan/file/advanced', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+            'Apikey': '874630e7-9a60-457c-a096-c79f2274c161',
+        },
+        timeout: 0,
+      })
+      .then(async (response) => {
+        if(response){
+          
+          setLoaderFlag(false)
+          setOutputFlag(true)
+          const data = response.data;
+          console.log(data)
+          console.log(data.CleanResult); 
+          console.log(data.FoundViruses); 
+          setOutput(data.CleanResult)
+          await generateQuestions();
+        }
+        
+      })
+      .catch(error => {
+          console.error('Error uploading file:', error);
+      });
+    } catch (error) {
+      console.error(error);
+    }
+    console.log("end");
+  }
+
+  const virustotal_func = () => {
+    setLoaderFlag(true)
+    setUploadFlag(false)
+    api_virustotal_key = '7b5adb68edbcdbc0047ff72271a6b072df6f5f794758fcc8541ba5099a1b5cdc'
+    const formData = new FormData();
+    formData.append('file', selectedFile.virustotal);
+    const options = {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'x-apikey': '7b5adb68edbcdbc0047ff72271a6b072df6f5f794758fcc8541ba5099a1b5cdc'
+      }
+    };
+    
+    options.body = form;
+
+    fetch('https://www.virustotal.com/api/v3/files', options)
+    .then(response => response.json())
+    .then(response => console.log(response))
+    .catch(err => console.error(err));
+    
+  }
 
   useEffect(()=>{
     const handleSubmit = async () => {
-      if(selectedFile.cloudmersive){
-        setLoaderFlag(true)
-        setUploadFlag(false)
-        const formData = new FormData();
-        formData.append('inputFile', selectedFile.cloudmersive, "file");
-        
-        console.log("start");
-        try {
-          axios.post('https://api.cloudmersive.com/virus/scan/file/advanced', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-                'Apikey': '874630e7-9a60-457c-a096-c79f2274c161',
-                // Add other headers as needed
-            },
-            timeout: 0, // Adjust timeout as needed
-            // You may add other options like responseType, onUploadProgress, etc.
-          })
-          .then(response => {
-            if(response){
-              setLoaderFlag(false)
-              setOutputFlag(true)
-              const data = response.data;
-              console.log(data)
-              console.log(data.CleanResult); 
-              console.log(data.FoundViruses); 
-              setOutput(data.CleanResult)
-              generateQuestions();
-            }
-          })
-          .catch(error => {
-              console.error('Error uploading file:', error);
-          });
-        } catch (error) {
-          console.error(error);
-        }
-        console.log("end");
+      switch(whichService){
+        case 'cloudmersive':
+          console.log('cloud');
+          cloudMersive_func();
+          break;
+        case 'virustotal':
+          console.log('virus');
+          virustotal_func();
+          break;
+        case 'threatsense':
+          console.log('threat');
+          threatSense_func();
+          break;
       }
     };
     handleSubmit();
-  }, [selectedFile.cloudmersive])
+  }, [selectedFile])
 
   const generateQuestions = async () => {
-    if(output){
-      let Text = await runGenerativeAI("Create 3 questions about virus and malware prevention.");
-      let splitText = Text.split("?");
-      const filteredText = splitText.filter(item => item != '')
-      setPromptOutput(filteredText)
-    }
+    let Text = await runGenerativeAI("Create 3 questions about virus and malware prevention.");
+    let splitText = Text.split("?");
+    const filteredText = splitText.filter(item => item != '')
+    console.log("hit generating questions")
+    setPromptOutput(filteredText)
   }
 
   const generateOutput = async (prompt) => {
