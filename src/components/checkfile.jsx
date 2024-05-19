@@ -75,7 +75,10 @@ const Testnetwork = () => {
           console.log(prediction)
           setOutput('')
           setOutput(prediction)
-          await generateQuestions();
+          const filetype = whichService === 'cloudmersive' ?  '.pdf, .docx, .xlsx, .pptx, .html, .swf, .zip, .rar, .dmg, .tar' 
+          : whichService === 'threatsense' ? '.exe, .dll' 
+          : whichService === 'virustotal' ? 'any' : '' ;
+          await generateQuestions(filetype);
           setErrormessage('')
         }
       })
@@ -102,6 +105,7 @@ const Testnetwork = () => {
     formData.append('inputFile', selectedFile.cloudmersive, "file");
     
     console.log("start");
+    console.log(selectedFile.cloudmersive)
     try {
       axios.post('https://api.cloudmersive.com/virus/scan/file/advanced', formData, {
         headers: {
@@ -120,7 +124,10 @@ const Testnetwork = () => {
           console.log(data.CleanResult); 
           console.log(data.FoundViruses); 
           setOutput(data.CleanResult)
-          await generateQuestions();
+          const filetype = whichService === 'cloudmersive' ?  '.pdf, .docx, .xlsx, .pptx, .html, .swf, .zip, .rar, .dmg, .tar' 
+          : whichService === 'threatsense' ? '.exe, .dll' 
+          : whichService === 'virustotal' ? 'any' : '' ;
+          await generateQuestions(filetype);
           setErrormessage('')
         }
         
@@ -207,11 +214,14 @@ const Testnetwork = () => {
           setLoaderFlag(false)
           setOutputFlag(true)
           console.log(response.data)
-          // const prediction = response.data.prediction;
-          // console.log(prediction)
+          const prediction = response.data.extracted_values.data.attributes.stats.malicious;
+          console.log(prediction)
           setOutput('')
-          setOutput(prediction)
-          await generateQuestions();
+          setOutput(prediction === 0 ? true : false)
+          const filetype = whichService === 'cloudmersive' ?  '.pdf, .docx, .xlsx, .pptx, .html, .swf, .zip, .rar, .dmg, .tar' 
+          : whichService === 'threatsense' ? '.exe, .dll' 
+          : whichService === 'virustotal' ? 'any' : '' ;
+          await generateQuestions(filetype);
           setErrormessage('')
         }
       })
@@ -248,8 +258,8 @@ const Testnetwork = () => {
     handleSubmit();
   }, [selectedFile])
 
-  const generateQuestions = async () => {
-    let Text = await runGenerativeAI("Create 3 questions about prevention of virus and malware that maybe included to your downloaded files from the internet.");
+  const generateQuestions = async (filetype) => {
+    let Text = await runGenerativeAI(`Create 3 questions about prevention of virus and malware that maybe included to your ${filetype} downloaded files from the internet.`);
     let splitText = Text.split("?");
     const filteredText = splitText.filter(item => item != '')
     console.log("hit generating questions")
@@ -258,7 +268,7 @@ const Testnetwork = () => {
 
   const generateOutput = async (prompt) => {
     setGeneratedOutput('')
-    const text = await runGenerativeAI(prompt + "Make it a paragraph form")
+    const text = await runGenerativeAI(prompt + "Make it a paragraph form and do not use list formatting")
     console.log(text)
     setGeneratedOutput(text)
   }
@@ -279,13 +289,14 @@ const Testnetwork = () => {
       return text;
   } catch (error) {
       console.error('Error generating content:', error);
+      setErrormessage(error)
       return error
   }
 };
 
   return (
-    <section className="w-full h-4/5 flex items-center justify-center">
-        {uploadFlag && <UploadFile upload={uploadFile} />}
+    <section className="w-full h-screen flex items-center justify-center">
+        {uploadFlag && <UploadFile upload={uploadFile}/>}
         {loaderFlag && <Loaders loadertext={"Checking the File"} />}
         {outputFlag && <Output 
         uploadAgain={uploadAgain} 
@@ -294,6 +305,8 @@ const Testnetwork = () => {
         generateOutput={generateOutput} 
         generatedOutput={generatedOutput}
         generateSuggestion={generateSuggestion}/>}
+
+        {errormessage && <Errorpage error={errormessage}/>}
 
     </section>
   )

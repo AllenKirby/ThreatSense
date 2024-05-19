@@ -18,11 +18,11 @@ const RootLayout = () => {
   }, [])
   return (
     <>
-      <header className='md:px-32 px-10 w-full h-auto py-5 flex items-center justify-between'>
+      <header className='absolute md:px-32 px-10 w-full h-auto py-5 flex items-center justify-between'>
         <div data-aos="fade-right">
-          <p className='md:text-4xl text-2xl font-permanentMarker'>THREAT<span className='text-blue-800'>SENSE</span></p>
+          <p className='md:text-3xl text-xl font-permanentMarker'>THREAT<span className='text-blue-800'>SENSE</span></p>
         </div>
-        <nav data-aos="fade-left" className='md:block hidden text-xl font-medium'>
+        <nav data-aos="fade-left" className='md:block hidden text-lg font-medium'>
           <NavLink className='mr-7 hover:text-blue-800 transition-all duration-100' to="/">Home</NavLink>
           <NavLink className='ml-7 hover:text-blue-800 transition-all duration-100' to="/checkfile">Check File</NavLink>
         </nav>

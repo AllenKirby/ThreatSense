@@ -24,7 +24,7 @@ const router = createBrowserRouter(
 const mainpage = () => {
   console.log(supabase)
   return (
-    <main className="w-full h-screen font-poppins bg-slate-950 text-white">
+    <main className="w-full h-auto relative font-poppins bg-slate-950 text-white">
       <RouterProvider router={router}/>
     </main>
   )

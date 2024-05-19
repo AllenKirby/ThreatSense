@@ -55,30 +55,30 @@ const Output = (props) => {
 
   return (
     <section className="w-full h-auto p-10 flex flex-col md:flex-row items-center justify-center transition-all duration-300">
-        <div className="w-1/2 h-auto text-center">
+        <div className="w-full h-1/2 md:w-1/2 md:h-auto text-center">
             <div className='w-full flex items-center justify-center'>
-                {output ? <Lottie options={successoptions} width={150} height={150}/> : <Lottie options={warningoptions} width={150} height={150}/> }
+                {output ? <Lottie options={successoptions} width={100} height={100}/> : <Lottie options={warningoptions} width={100} height={100}/> }
             </div>
             <p className={`text-lg md:text-2xl font-semibold ${color}`}>{message}</p>
             {(output || output === 1)&& <div className='w-full h-auto'>
                 {Array.isArray(prompts) && prompts.map((prompt, index) => (
-                    <button key={index} onClick={() => {generateOutput(prompt); setOutputContainer(true); setLoaderFlag(true);}} className='w-auto h-auto px-10 py-2 text-base bg-slate-800 rounded-xl m-2 hover:bg-white hover:text-slate-800 hover:scale-125 transition-all duration-100'>{prompt}</button>
+                    <button data-aos="zoom-in" key={index} onClick={() => {generateOutput(prompt); setOutputContainer(true); setLoaderFlag(true);}} className='w-auto h-auto px-10 py-2 text-sm md:text-base bg-slate-800 rounded-xl m-2 hover:bg-white hover:text-slate-800 hover:scale-125 transition-all duration-100'>{prompt}</button>
                 ))}
             </div>}
-            <div className="w-full flex items-center justify-center my-5">
+            <div className="w-full flex items-center justify-center my-2">
                 <button onClick={uploadAgain} className="w-auto md:text-xl text-lg px-7 py-2 rounded-2xl bg-cyan-950 hover:bg-white hover:text-slate-900 hover:scale-125 transition-all duration-150 flex"><FiUpload color='white' className='mr-4'/>Upload Another File</button>
             </div>
-            <div className="w-full flex items-center justify-center my-5">
+            <div className="w-full flex items-center justify-center my-2">
                 <button className="md:text-xl text-lg w-auto px-12 py-2 rounded-2xl bg-cyan-950 hover:bg-white hover:text-slate-900 hover:scale-125 transition-all duration-150 flex"><Link to='/'>Return to Home</Link></button>
             </div>
         </div>
-        {outputContainer && <div className='w-1/2 max-h-96 text-center bg-slate-800 rounded-2xl p-5 overflow-auto transition-all duration-300'>
+        {outputContainer && <div data-aos="fade-left" className='w-full md:w-1/2 max-h-96 text-center bg-slate-800 rounded-2xl p-3 transition-all duration-300'>
             {loaderFlag && <Loaders loadertext={"Generating Output"}/>}
             {generatedOutput && 
                 (<div className='w-auto h-auto'>
                     <p className='text-2xl font-medium my-3'>Generated Output</p>
-                    <div className='w-full h-auto'>
-                        <p className='text-justify text-lg md:text-xl'>{generatedOutput}</p>
+                    <div className='w-full max-h-72 bg-slate-900 p-3 rounded-xl overflow-auto'>
+                        <p className='text-justify indent-28 text-base md:text-lg'>{generatedOutput}</p>
                     </div>
                 </div>)}
         </div>}
@@ -92,7 +92,7 @@ Output.propTypes = {
     prompts: PropTypes.arrayOf(PropTypes.string).isRequired,
     generateOutput: PropTypes.func,
     generatedOutput: PropTypes.string,
-    generateSuggestion: PropTypes.func
+    generateSuggestion: PropTypes.func,
   };
 
 export default Output
